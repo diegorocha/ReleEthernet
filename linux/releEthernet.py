@@ -5,13 +5,22 @@ from urllib2 import build_opener
 from gi.repository import Gtk
 from argparse import ArgumentParser, Action
 
+"""
+This class is a interface between Python and the Arduino to controls the relays.
+"""
 class ReleEthernet(object):
 
     __arduino_host_name__ = 'http://192.168.0.10'
 
+    """
+    Return the correct url to perform a command on a relay.
+    """
     def _getUrl(self, rele=0, comando=1):
         return '%s/%d%s' % (self.__arduino_host_name__, rele, comando)
 
+    """
+    Send a HTTP GET with a command to perform on a relay to Arduino.
+    """
     def enviarComando(self, rele=0, comando='1'):
         url = self._getUrl(rele, comando)
         opener = build_opener()
@@ -20,6 +29,9 @@ class ReleEthernet(object):
         f.close()
         return html
 
+    """
+    Return a list with all active relays on Arduino.
+    """
     def getRelays(self):
         i = -1
         html = ''
@@ -32,18 +44,33 @@ class ReleEthernet(object):
             f.close()
         return range(i)
 
+    """
+    Turn on a relay.
+    """
     def ligar(self, rele):
         return self.enviarComando(rele, '1')
 
+    """
+    Turn off a relay.
+    """
     def desligar(self, rele):
         return self.enviarComando(rele, '0')
 
+    """
+    Switch the state of a relay.
+    """
     def inverter(self, rele):
         return self.enviarComando(rele, '!')
 
+    """
+    Ask Arduino the state of a relay.
+    """
     def estado(self, rele):
         return self.enviarComando(rele, '?')
 
+    """
+    Return true if the given relay is on, false if relay is off. Otherwise raise a Exception.
+    """
     def releLigado(self, rele):
         estado = self.estado(rele)
         if 'ERROR' in estado:
@@ -51,6 +78,9 @@ class ReleEthernet(object):
         return 'ON' in estado
 pass
 
+"""
+This class is a grapic user interface to control the relays.
+"""
 class GuiWindow(Gtk.Window):
 
     def __init__(self, ReleEthernet):
