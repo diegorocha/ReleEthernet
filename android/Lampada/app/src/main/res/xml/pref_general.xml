@@ -1,0 +1,33 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--<CheckBoxPreference-->
+        <!--android:key="example_checkbox"-->
+        <!--android:title="@string/pref_title_social_recommendations"-->
+        <!--android:summary="@string/pref_description_social_recommendations"-->
+        <!--android:defaultValue="true" />-->
+
+    <!--&lt;!&ndash; NOTE: EditTextPreference accepts EditText attributes. &ndash;&gt;-->
+    <!--&lt;!&ndash; NOTE: EditTextPreference's summary should be set to its value by the activity code. &ndash;&gt;-->
+    <EditTextPreference
+        android:key="lampada_host"
+        android:title="@string/pref_lampada_host_title"
+        android:defaultValue="@string/pref_lampada_host_default"
+        android:selectAllOnFocus="true"
+        android:inputType="text"
+        android:capitalize="words"
+        android:singleLine="true"
+        android:maxLines="1" />
+
+    <!-- NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to
+         dismiss it. -->
+    <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->
+    <ListPreference
+        android:key="theme"
+        android:title="@string/pref_theme"
+        android:defaultValue="@string/pref_theme_default"
+        android:entries="@array/pref_theme_titles"
+        android:entryValues="@array/pref_theme_values"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null" />
+
+</PreferenceScreen>

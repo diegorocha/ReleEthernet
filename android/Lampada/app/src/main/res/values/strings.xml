@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Lâmpada</string>
+    <string name="error_message">Não foi possível se comunicar com a Lâmpada, verifique a conexão!</string>
+    <string name="relay_label">Lâmpada</string>
+    <string name="action_refresh">Recarregar</string>
+    <string name="action_settings">Configurações</string>
+    <string name="theme">Theme</string>
+
+</resources>
