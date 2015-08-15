@@ -11,7 +11,8 @@ public class StartTask extends RelayTask {
 
     @Override
     protected String getPath() {
-        return "/0?x=x";
+        //Necessário passar parâmetros após ? por limitação do parse de URL
+        return "/0?foo=bar";
     }
 
 }

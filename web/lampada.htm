@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="WebApp para controlar a lâmpada do quarto">
+    <meta name="author" content="Diego Rocha">
+    <link rel="icon" href="favicon.ico">
+    <title>Lâmpada</title>
+    <link href="https://diegorocha.com.br/css/bootstrap.min.css" rel="stylesheet">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body role="document">
+    <div class="container theme-showcase" role="main">
+      <div class="row">
+        <div class="col-sm-2 col-sm-offset-5">
+
+          <div class="page-header text-center center-block">
+            <h1>Lâmpada</h1>
+          </div>
+          <p class="text-center">
+            <button type="button" class="btn btn-default">Carregando</button>
+          </p>
+        </div>
+      </div>
+      </p>
+      <div class="row">
+        <div class="col-sm-4 col-sm-offset-4">
+          <div class="alert alert-success hidden" role="alert">
+            <strong>OK!</strong>
+          </div>
+          <div class="alert alert-info hidden" role="alert">
+            <strong>Carregando!</strong> Enviando comando para a lâmpada.
+          </div>
+          <div class="alert alert-danger hidden" role="alert">
+            <strong>Erro!</strong> Não foi possível se conectar com a lâmpada, verifique a rede.
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="https://diegorocha.com.br/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      
+      $.fn.urlConsulta = "http://192.168.1.118/0?foo=bar";
+      $.fn.url = "http://192.168.1.118/0!";
+      
+      $.fn.enviarComando = function(url) {
+        this.carregando();
+        var jqxhr = $.get(url, function(r) {
+          if(r.rele){
+            $(this).ligada();
+          }else{
+            $(this).desligada();
+          }
+          if(r.error){
+            $(this).error();
+          }
+        }).fail(function() {
+          $(this).erro();
+        });
+      };
+
+      $.fn.consultarLampada = function() {
+        this.enviarComando(this.urlConsulta);
+      };
+
+      $.fn.apertarLampada = function() {
+        this.enviarComando(this.url);
+      };
+
+      $.fn.exibir = function() {
+        this.esconderTodosAlertas();
+        this.removeClass('hidden');
+      };
+
+      $.fn.esconder = function() {
+        this.addClass('hidden');
+      };
+
+      $.fn.esconderTodosAlertas = function() {
+        $('.alert').addClass('hidden');
+      };
+
+      $.fn.setBotao = function(btnClass, text){
+        $('.btn').removeClass('btn-default');
+        $('.btn').removeClass('btn-info');
+        $('.btn').removeClass('btn-primary');
+        $('.btn').removeClass('btn-danger');
+        $('.btn').addClass(btnClass);
+        $('.btn').html(text);
+      };
+
+      $.fn.carregando = function(){
+        this.setBotao('btn-default', 'Carregando');
+        $('.alert-info').exibir();
+      };
+
+      $.fn.desligada = function(){
+        this.setBotao('btn-info', 'Desligada');
+        this.esconderTodosAlertas();
+      };
+
+      $.fn.ligada = function(){
+        this.setBotao('btn-primary', 'Ligada');
+        this.esconderTodosAlertas();
+      };
+
+      $.fn.erro = function(){
+        this.setBotao('btn-danger', 'Erro');
+        $('.alert-danger').exibir();
+      };
+
+      $(document).ready(function() {
+        $(this).consultarLampada();
+
+        $('.btn').click(function(){
+          $(this).apertarLampada();
+        });
+      });
+    </script>
+  </body>
+</html>

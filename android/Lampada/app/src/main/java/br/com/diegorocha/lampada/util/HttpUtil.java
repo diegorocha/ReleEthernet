@@ -36,7 +36,7 @@ public class HttpUtil {
         reader = new InputStreamReader(stream, "UTF-8");
         char[] buffer = new char[len];
         reader.read(buffer);
-        return new String(buffer).replace("\r\n", "");
+        return new String(buffer).replace("\r\n", "\n").trim();
 
     }
 
