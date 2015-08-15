@@ -14,7 +14,7 @@ public abstract class HttpTask<T extends IAnimateTaskCaller> extends AsyncTask<T
     @Override
     protected AsyncTaskResult<String> doInBackground(T... params) {
         caller = params[0];
-        publishProgress(null);
+        publishProgress();
         try {
             result = new AsyncTaskResult<String>(HttpUtil.HttpGet(getUrl()));
         }catch (Exception ex){

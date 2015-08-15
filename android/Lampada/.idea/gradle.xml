@@ -8,8 +8,8 @@
         <option name="gradleHome" value="$APPLICATION_HOME_DIR$/gradle/gradle-2.2.1" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/app" />
+            <option value="$USER_HOME$/Dropbox/fontes/ReleEthernet/android/Lampada" />
+            <option value="$USER_HOME$/Dropbox/fontes/ReleEthernet/android/Lampada/app" />
           </set>
         </option>
       </GradleProjectSettings>

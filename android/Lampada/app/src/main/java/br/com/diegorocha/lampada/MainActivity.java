@@ -7,6 +7,8 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.CalendarContract;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.AndroidCharacter;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -15,8 +17,6 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.pnikosis.materialishprogress.ProgressWheel;
-
 import br.com.diegorocha.lampada.task.ChangeStateTask;
 import br.com.diegorocha.lampada.task.IChangeStateTaskCaller;
 import br.com.diegorocha.lampada.task.StartTask;
@@ -24,18 +24,18 @@ import br.com.diegorocha.lampada.task.StartTask;
 
 public class MainActivity extends UserThemedActivity implements IChangeStateTaskCaller {
 
-    ProgressWheel progress;
     TextView textViewError;
     TextView txtRelayLabel;
     Switch swRelay;
+    SwipeRefreshLayout swipeView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-
-        progress = (ProgressWheel)findViewById(R.id.progress_wheel);
+        swipeView = (SwipeRefreshLayout) findViewById(R.id.swipe);
+//        swipeView.setColorSchemeColors(android.R.color.holo_blue_dark, android.R.color.holo_blue_light, android.R.color.holo_green_light, android.R.color.holo_green_light);
         textViewError = (TextView)findViewById(R.id.textViewError);
         txtRelayLabel = (TextView)findViewById(R.id.textRelayLabel);
         swRelay = (Switch)findViewById(R.id.switchRelay);
@@ -44,6 +44,13 @@ public class MainActivity extends UserThemedActivity implements IChangeStateTask
             @Override
             public void onClick (View v){
                 new ChangeStateTask().execute(MainActivity.this);
+            }
+        });
+
+        swipeView.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                load();
             }
         });
 
@@ -93,13 +100,12 @@ public class MainActivity extends UserThemedActivity implements IChangeStateTask
 
     @Override
     public void beginSpin() {
-        progress.setProgress(0);
-        progress.spin();
+        swipeView.setRefreshing(true);
     }
 
     @Override
     public void stopSpin() {
-        progress.stopSpinning();
+        swipeView.setRefreshing(false);
     }
 
     @Override
