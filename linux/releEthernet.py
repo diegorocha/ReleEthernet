@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 #-*- coding: UTF-8 -*-
 
-from urllib2 import build_opener
+from json import loads
+from requests import get
 from gi.repository import Gtk
 from argparse import ArgumentParser, Action
+
 
 """
 This class is a interface between Python and the Arduino to controls the relays
@@ -12,7 +14,7 @@ This class is a interface between Python and the Arduino to controls the relays
 
 class ReleEthernet(object):
 
-    __arduino_ip__ = '192.168.0.10'
+    __arduino_ip__ = '192.168.1.118'
     __arduino_host_name__ = 'http://%s' % (__arduino_ip__)
 
     def __init__(self):
@@ -23,6 +25,9 @@ class ReleEthernet(object):
     """
 
     def _getUrl(self, rele=0, comando=1):
+        if comando == '?':
+            #Acerta o parse da URL incluindo um parâmetro qualquer
+            comando = '?foo=bar'
         return '%s/%d%s' % (self.__arduino_host_name__, rele, comando)
 
     """
@@ -31,13 +36,11 @@ class ReleEthernet(object):
 
     def enviarComando(self, rele=0, comando='1', showReturn=False):
         url = self._getUrl(rele, comando)
-        opener = build_opener()
-        f = opener.open(url)
-        html = f.read()
-        f.close()
-        if comando == '?' and showReturn:
-            print html,
-        return html
+        r = get(url)
+        estado = loads(r.text)
+        if showReturn:
+            print(estado)
+        return estado
 
     """
     """
@@ -46,35 +49,35 @@ class ReleEthernet(object):
         try:
             self.enviarComando(0, '?')
             return True
-        except Exception, e:
+        except Exception:
             return False
 
     """
     Turn on a relay.
     """
 
-    def ligar(self, rele):
+    def ligar(self, rele=0):
         return self.enviarComando(rele, '1')
 
     """
     Turn off a relay.
     """
 
-    def desligar(self, rele):
+    def desligar(self, rele=0):
         return self.enviarComando(rele, '0')
 
     """
     Switch the state of a relay.
     """
 
-    def inverter(self, rele):
+    def inverter(self, rele=0):
         return self.enviarComando(rele, '!')
 
     """
     Ask Arduino the state of a relay.
     """
 
-    def estado(self, rele):
+    def estado(self, rele=0):
         return self.enviarComando(rele, '?')
 
     """
@@ -82,11 +85,12 @@ class ReleEthernet(object):
     raise a Exception.
     """
 
-    def releLigado(self, rele):
+    def releLigado(self, rele=0):
         estado = self.estado(rele)
-        if 'ERROR' in estado:
-            raise Exception('Invalid rele number %d' % (rele))
-        return 'ON' in estado
+        erro = estado.get("error")
+        if erro:
+            raise Exception(erro)
+        return estado["rele"]
 pass
 
 """
@@ -122,7 +126,7 @@ class GuiWindow(Gtk.Window):
 
         switch = Gtk.Switch()
         switch.props.valign = Gtk.Align.CENTER
-        switch.set_active(re.releLigado(0))
+        switch.set_active(self.releEthernet.releLigado())
         switch.connect('notify::active', self.on_switch_activate, 0)
         hbox.pack_start(switch, False, True, 0)
 
@@ -130,14 +134,12 @@ class GuiWindow(Gtk.Window):
 
     def on_switch_activate(self, widget, gparam, rele):
         if widget.get_active():
-            re.ligar(rele)
+            self.releEthernet.ligar()
         else:
-            re.desligar(rele)
+            self.releEthernet.desligar()
 pass
 
 if __name__ == '__main__':
-    re = ReleEthernet()
-
     argumentParser = ArgumentParser(
         epilog='Author: Diego Rocha <diego@diegorocha.com.br>')
     sub_parser = argumentParser.add_subparsers()
@@ -160,14 +162,16 @@ if __name__ == '__main__':
     gui_parser.set_defaults(command='', gui=True)
 
     args = argumentParser.parse_args()
-
+    rele = ReleEthernet()
     if args.gui:
-        win = GuiWindow(re)
+        win = GuiWindow(ReleEthernet=rele)
         win.connect("delete-event", Gtk.main_quit)
         win.show_all()
         Gtk.main()
     else:
-        if re.conectado:
-            re.enviarComando(0, args.command, True)
+        if rele.conectado:
+            estado = rele.enviarComando(comando=args.command)
+            if '?' in args.command:
+                print(estado['rele'])
         else:
-            print 'Arduino Not Found'
+            print('Arduino Not Found')

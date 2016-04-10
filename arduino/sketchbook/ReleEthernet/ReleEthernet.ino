@@ -1,5 +1,6 @@
 #include <EtherCard.h>
 #include <TM1638.h>
+#include <LiquidCrystal.h>
 
 // PORTAS DIGITAIS USADAS: 5, 6, 7, 8, 9, 10
 // 5: DIGITAL OUTPUT DO RELE
