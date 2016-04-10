@@ -1,26 +1,27 @@
 #include <EtherCard.h>
 #include <TM1638.h>
 
-// PORTAS DIGITAIS USADAS: 5, 6, 7, 8
+// PORTAS DIGITAIS USADAS: 5, 6, 7, 8, 9, 10
 // 5: DIGITAL OUTPUT DO RELE
 // 6: STROBE DO DISPLAY
 // 7: CLOCK DO DISPLAY
 // 8: DIGITAL I/O DO DISPLAY
+//10: <USADO PELO ETHERNET SHIELD>
 
 // CONFIGURACOES GERAIS
 #define QTD_RELES 1
 #define ON 1
 #define OFF 0
-#define ON_STR "ON"
-#define OFF_STR "OFF"
+#define ON_STR "true"
+#define OFF_STR "false"
 
 // CONFIGURACOES DE REDE
 #define STATIC 1 // Caso queira definir um ip estático mude de 0 para 1 
 #if STATIC
-static byte myip[] = { 192, 168, 0, 10 }; // Endereço IP estático a ser definido a interface Ethernet
-static byte gwip[] = { 192, 168, 0, 1 }; // Endereço IP do Gateway da sua rede
+static byte myip[] = { 192, 168, 1, 118 }; // Endereço IP estático a ser definido a interface Ethernet
+static byte gwip[] = { 192, 168, 1, 1 }; // Endereço IP do Gateway da sua rede
 #endif
-static byte mymac[] = { 0x74,0x69,0x69,0x2D,0x30,0x21 }; // MAC Address da interface ethernet - deve ser único na sua rede local
+static byte mymac[] = { 0x44,0x69,0x65,0x67,0x6f,0x42 }; //44:69:65:67:6f:42 MAC Address da interface ethernet
 byte Ethernet::buffer[500];
 BufferFiller bfill;
 
@@ -39,8 +40,11 @@ int display_i = 0;
 int qtd_loop = 0;
 #define LOOP_FLAG 150
 
+// CONFIGURACOES DO LCD
+//LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+
 // CONFIGURACOES DE PORTA 13 ALWAYS ON
-#define PORTA_13_ALWAYS_ON 1 //O: DESLIGADO; 1: LIGADO
+#define PORTA_13_ALWAYS_ON 0 //O: DESLIGADO; 1: LIGADO
 
 // RESET FUNCTION
 void(* resetFunc) (void) = 0;
@@ -130,10 +134,12 @@ word processRequest(int n_rele, char job){
     
     // REQUISICAO INVALIDA
     if (n_rele < 0 || n_rele >= QTD_RELES) {
-      bfill.emit_p(PSTR("HTTP/1.0 200 OK\r\n"
-        "Content-Type: text/html\r\n"
+      bfill.emit_p(PSTR("HTTP/1.0 404 NOT FOUND\r\n"
+        "Content-Type: application/json\r\n"
+        "Access-Control-Allow-Origin: *\r\n"
+        "X-Powered-By: Diego Rocha/Arduino\r\n"
         "\r\n"
-        "ERROR\r\n"));
+        "{\"rele\": false, \"error\": \"Not found\"}\r\n"));
       return bfill.position();
     }
     
@@ -146,10 +152,12 @@ word processRequest(int n_rele, char job){
     // GERA A RESPOSTA DA REQUISICAO
     bfill.emit_p(PSTR( 
       "HTTP/1.0 200 OK\r\n"
-      "Content-Type: text/html\r\n"
+      "Content-Type: application/json\r\n"
+      "Access-Control-Allow-Origin: *\r\n"
+      "X-Powered-By: Diego Rocha/Arduino\r\n"
       "\r\n"
-      "RELE $D: $S\r\n"
-      ), n_rele, output);
+      "{\"rele\": $S, \"error\": \"\"}\r\n"
+      ), output);
     return bfill.position();
 }
 
@@ -158,21 +166,20 @@ void setup(){
    Serial.begin(57600);
    
    // INICIALIZA DISPLAY
-   module.setDisplayToString("Setup", 3);
+   module.setDisplayToString("Setup", 0, 3);
+   
+   // INICIALIZA LCD
+   //lcd.begin(16, 2);
+   //lcd.print("hello, world!");
    
    // INICIALIZA PORTAS UTILIZADAS PELOS RELES
    for(int i = 0; i<QTD_RELES; i++){
      pinMode(rele[i], OUTPUT);
      digitalWrite(rele[i], LOW);
    }
-   
-   #if PORTA_13_ALWAYS_ON
-   pinMode(13, OUTPUT);
-   digitalWrite(13, HIGH);
-   #endif
       
    // CARREGA BIBLIOTECA DA SHIELD ETHERNET E OBTEM IP
-   Serial.println("\n[Iniciando Servidor]");
+   Serial.println("[Iniciando Servidor]");
    if (ether.begin(sizeof Ethernet::buffer, mymac, 10) == 0)
       Serial.println("Falha ao acessar o controlador Ethernet.");
    #if STATIC
@@ -193,6 +200,9 @@ void setup(){
 
 void loop(){
   byte keys = module.getButtons();
+  
+  //lcd.setCursor(0, 1);
+  //lcd.print(millis()/1000);
   
   // SE IP NAO COUBER NO DISPLAY ATUALIZA O DISPLAY FAZENDO ROTATORIA
   if(exibe_ip){
@@ -257,3 +267,4 @@ void loop(){
       ether.httpServerReply(processRequest(rele, job));
    }
 }
+
