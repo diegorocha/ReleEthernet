@@ -1,21 +1,26 @@
 #!/usr/bin/env python
-#-*- coding: UTF-8 -*-
+# -*- coding: UTF-8 -*-
 
+from __future__ import print_function
 from json import loads
 from requests import get
-from gi.repository import Gtk
+from decouple import config
 from argparse import ArgumentParser, Action
 
-
-"""
-This class is a interface between Python and the Arduino to controls the relays
-"""
+try:
+    import gi
+    gi.require_version('Gtk', '3.0')
+    from gi.repository import Gtk
+    gtk_loaded = True
+except:
+    gtk_loaded = False
 
 
 class ReleEthernet(object):
+    """ This class is a interface between Python and the Arduino to controls the relays. """
 
-    __arduino_ip__ = '192.168.1.118'
-    __arduino_host_name__ = 'http://%s' % (__arduino_ip__)
+    __arduino_ip__ = config('arduino_ip', default='192.168.1.118')
+    __arduino_host_name__ = config('arduino_host_name', default='http://%s' % (__arduino_ip__))
 
     def __init__(self):
         self.conectado = self.testarComunicacao()
@@ -26,7 +31,7 @@ class ReleEthernet(object):
 
     def _getUrl(self, rele=0, comando=1):
         if comando == '?':
-            #Acerta o parse da URL incluindo um parâmetro qualquer
+            # Acerta o parse da URL incluindo um parâmetro qualquer
             comando = '?foo=bar'
         return '%s/%d%s' % (self.__arduino_host_name__, rele, comando)
 
@@ -42,50 +47,33 @@ class ReleEthernet(object):
             print(estado)
         return estado
 
-    """
-    """
-
     def testarComunicacao(self):
+        """ Try to send a command to device. """
         try:
             self.enviarComando(0, '?')
             return True
         except Exception:
             return False
 
-    """
-    Turn on a relay.
-    """
-
     def ligar(self, rele=0):
+        """ Turn on a relay. """
         return self.enviarComando(rele, '1')
 
-    """
-    Turn off a relay.
-    """
-
     def desligar(self, rele=0):
+        """ Turn off a relay. """
         return self.enviarComando(rele, '0')
 
-    """
-    Switch the state of a relay.
-    """
-
     def inverter(self, rele=0):
+        """ Switch the state of a relay. """
         return self.enviarComando(rele, '!')
 
-    """
-    Ask Arduino the state of a relay.
-    """
-
     def estado(self, rele=0):
+        """ Ask Arduino the state of a relay. """
         return self.enviarComando(rele, '?')
 
-    """
-    Return true if the given relay is on, false if relay is off. Otherwise
-    raise a Exception.
-    """
-
     def releLigado(self, rele=0):
+        """ Return true if the given relay is on, false if relay is off. Otherwise
+        raise a Exception. """
         estado = self.estado(rele)
         erro = estado.get("error")
         if erro:
@@ -93,53 +81,53 @@ class ReleEthernet(object):
         return estado["rele"]
 pass
 
-"""
-This class is a grapic user interface to control the relays.
-"""
+if gtk_loaded:
+    class GuiWindow(Gtk.Window):
+        """
+        This class is a grapic user interface to control the relays.
+        """
+
+        def __init__(self, ReleEthernet):
+            Gtk.Window.__init__(self, title='Rele Ethernet')
+            self.releEthernet = ReleEthernet
+            self.set_border_width(10)
+            self.set_position(Gtk.WindowPosition.CENTER)
+            self.set_default_size(200, 0)
+
+            hbox = Gtk.Box(spacing=6)
+            self.add(hbox)
+
+            listbox = Gtk.ListBox()
+            listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+            hbox.pack_start(listbox, True, True, 0)
+
+            row = Gtk.ListBoxRow()
+            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=30)
+            row.add(hbox)
+
+            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            hbox.pack_start(vbox, True, True, 0)
+
+            label = Gtk.Label("Lâmpada", xalign=0)
+            vbox.pack_start(label, True, True, 0)
+
+            switch = Gtk.Switch()
+            switch.props.valign = Gtk.Align.CENTER
+            switch.set_active(self.releEthernet.releLigado())
+            switch.connect('notify::active', self.on_switch_activate, 0)
+            hbox.pack_start(switch, False, True, 0)
+
+            listbox.add(row)
+
+        def on_switch_activate(self, widget, gparam, rele):
+            if widget.get_active():
+                self.releEthernet.ligar()
+            else:
+                self.releEthernet.desligar()
+    pass
 
 
-class GuiWindow(Gtk.Window):
-
-    def __init__(self, ReleEthernet):
-        Gtk.Window.__init__(self, title='Rele Ethernet')
-        self.releEthernet = ReleEthernet
-        self.set_border_width(10)
-        self.set_position(Gtk.WindowPosition.CENTER)
-        self.set_default_size(200, 0)
-
-        hbox = Gtk.Box(spacing=6)
-        self.add(hbox)
-
-        listbox = Gtk.ListBox()
-        listbox.set_selection_mode(Gtk.SelectionMode.NONE)
-        hbox.pack_start(listbox, True, True, 0)
-
-        row = Gtk.ListBoxRow()
-        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=30)
-        row.add(hbox)
-
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        hbox.pack_start(vbox, True, True, 0)
-
-        label = Gtk.Label("Lâmpada", xalign=0)
-        vbox.pack_start(label, True, True, 0)
-
-        switch = Gtk.Switch()
-        switch.props.valign = Gtk.Align.CENTER
-        switch.set_active(self.releEthernet.releLigado())
-        switch.connect('notify::active', self.on_switch_activate, 0)
-        hbox.pack_start(switch, False, True, 0)
-
-        listbox.add(row)
-
-    def on_switch_activate(self, widget, gparam, rele):
-        if widget.get_active():
-            self.releEthernet.ligar()
-        else:
-            self.releEthernet.desligar()
-pass
-
-if __name__ == '__main__':
+def main():
     argumentParser = ArgumentParser(
         epilog='Author: Diego Rocha <diego@diegorocha.com.br>')
     sub_parser = argumentParser.add_subparsers()
@@ -164,10 +152,13 @@ if __name__ == '__main__':
     args = argumentParser.parse_args()
     rele = ReleEthernet()
     if args.gui:
-        win = GuiWindow(ReleEthernet=rele)
-        win.connect("delete-event", Gtk.main_quit)
-        win.show_all()
-        Gtk.main()
+        if gtk_loaded:
+            win = GuiWindow(ReleEthernet=rele)
+            win.connect("delete-event", Gtk.main_quit)
+            win.show_all()
+            Gtk.main()
+        else:
+            print('Could not load GTK')
     else:
         if rele.conectado:
             estado = rele.enviarComando(comando=args.command)
@@ -175,3 +166,6 @@ if __name__ == '__main__':
                 print(estado['rele'])
         else:
             print('Arduino Not Found')
+
+if __name__ == '__main__':
+    main()
