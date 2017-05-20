@@ -27,4 +27,4 @@ def api_compatibilidade(command):
     return api(action)
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0')

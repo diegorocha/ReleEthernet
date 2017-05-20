@@ -11,7 +11,7 @@ class ReleInterface(object):
 
     def _setup(self):
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.pin, GPIO.OUT, initial=GPIO.LOW)
+        GPIO.setup(self.pin, GPIO.OUT)
 
     @property
     def is_on(self):
