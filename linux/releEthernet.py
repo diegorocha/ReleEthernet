@@ -23,10 +23,10 @@ class ReleEthernet(object):
     the relays. """
 
     def __init__(self):
-        self.conectado = self.testar_comunicacao()
         self.arduino_ip = config('arduino_ip', default='192.168.0.16')
         self.arduino_host_name = config('arduino_host_name',
                                         default='http://%s' % self.arduino_ip)
+        self.conectado = self.testar_comunicacao()
 
     """
     Return the correct url to perform a command on a relay.
