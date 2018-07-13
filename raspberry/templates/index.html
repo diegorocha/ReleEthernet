@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <title>Lâmpada</title>
+        <link href="{{ url_for('static', filename='bootstrap-4.1.2/css/bootstrap.min.css') }}" rel="stylesheet">
+    </head>
+    <body>
+
+        <div class="container">
+            <div class="col-sm-4 offset-4 mt-5">
+                <div class="card-deck mb-3 text-center">
+                    <div class="card mb-4 box-shadow">
+                        <div class="card-header">
+                            <h4 class="my-0 font-weight-normal">Lâmpada</h4>
+                        </div>
+                        <div class="card-body">
+                            <h5>A lâmpada está <span id="span-status">desligada</span></h5>
+                            <button type="button" id="btn-acao" class="btn btn-lg btn-block btn-primary mt-3 text-capitalize">Desligar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="{{ url_for('static', filename='jquery-3.3.1/jquery-3.3.1.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='bootstrap-4.1.2/js/bootstrap.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+    </body>
+</html>
