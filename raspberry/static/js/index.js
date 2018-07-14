@@ -1,5 +1,4 @@
 $(document).ready(function(){
-    console.log("Teste");
 
     $('#btn-acao').click(function(){
         var actionUrl = "api/rele/toggle";
@@ -28,17 +27,21 @@ $(document).ready(function(){
         var map = {
             true: {
                 'status': 'ligada',
+                'estilo': 'btn-danger',
                 'acao': 'desligar'
             },
             false: {
                 'status': 'desligada',
+                'estilo': 'btn-success',
                 'acao': 'ligar'
             }
         };
-        $('#span-status').text(map[status.rele].status);
-        $('#btn-acao').text(map[status.rele].acao);
+        var value = map[status.rele];
+        $('#span-status').text(value.status);
+        $('#btn-acao').removeClass('btn-danger btn-success').addClass(value.estilo);
+        $('#btn-acao').text(value.acao);
     }
 
     atualizar();
-    setInterval(atualizar, 5000);
+    setInterval(atualizar, 3000);
 });
