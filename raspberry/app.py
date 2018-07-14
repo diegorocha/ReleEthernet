@@ -18,6 +18,15 @@ def nocache(view):
     return decorated
 
 
+def cors_enabled(view):
+    @wraps(view)
+    def decorated(*args, **kwargs):
+        response = view(*args, **kwargs)
+        response.headers['Access-Control-Allow-Origin'] = "*"
+        return response
+    return decorated
+
+
 @app.route('/')
 def index():
     return render_template("index.html")
@@ -25,6 +34,7 @@ def index():
 
 @app.route("/0", defaults={'command': '?'})
 @app.route("/0<command>")
+@cors_enabled
 @nocache
 def api_compatibilidade(command):
     command_map = {'0': 'off', '1': 'on', '!': 'toggle', '?': ''}
@@ -50,6 +60,7 @@ def set_cache_headers(response):
 
 @app.route('/api/rele')
 @app.route('/api/rele/<action>', methods=['POST'])
+@cors_enabled
 @nocache
 def api(action=''):
     rele = ReleInterface()
